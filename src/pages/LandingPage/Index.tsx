@@ -7,7 +7,7 @@ import UserTransactionsPreview from "./UserTransactionsPreview";
 import Button from "@mui/material/Button";
 import { useState } from "react";
 import WaterDropIcon from '@mui/icons-material/WaterDrop';
-import { requestFaucet, requestFaucetWithGlobalSigner, mevmRequestFaucet, m2RequestFaucet } from "../../api";
+import { requestFaucet, requestFaucetWithGlobalSigner, mevmRequestFaucet, requestM2FaucetWithGlobalSigner } from "../../api";
 import { to } from "await-to-js";
 import TextField from "@mui/material/TextField";
 import Container from "@mui/material/Container";
@@ -23,8 +23,11 @@ const FAUCET_URL = "https://seed-node1.movementlabs.xyz";
 const MEVM_URL = "https://mevm.movementlabs.xyz/v1";
 const M2_URL = "http://18.117.233.105:5000";
 const faucetClient = new FaucetClient(FAUCET_URL, FAUCET_URL);
+const m2FaucetClient = new FaucetClient(M2_URL, M2_URL);
 const aptosClient = new AptosClient(RPC_URL);
+const suiClient = new AptosClient(M2_URL);
 const coinClient = new CoinClient(aptosClient);
+const m2CoinClient = new CoinClient(suiClient);
 
 export default function LandingPage() {
 
@@ -69,7 +72,10 @@ export default function LandingPage() {
 
   const handleM2FaucetRequest = async () => {
     setLoading(true);
-    const [err, success] = await to(m2RequestFaucet(
+    const [err, success] = await to(requestM2FaucetWithGlobalSigner(
+      suiClient,
+      m2FaucetClient,
+      m2CoinClient,
       M2_URL,
       address
     ));

@@ -392,33 +392,34 @@ export async function mevmRequestFaucet(
 
 }
 
-export async function m2RequestFaucet(
-  m2Url : string,
+export async function requestM2FaucetWithGlobalSigner(
+  suiClient : AptosClient,
+  faucetClient : FaucetClient,
+  coinClient : CoinClient,
+  m2FaucetUrl : string, 
   address : string,
 ) : Promise<any> {
 
-  const requestData = {
-    jsonrpc: "2.0",
-    id: 1,
-    method: "FixedAmountRequest",
-    params: [
-        {
-            recipient: address
-        }
-    ]
-};
+  // double up the coins
+  Promise.all([
+    await requestFaucet(
+      suiClient, 
+      faucetClient,
+      m2FaucetUrl,
+      PUBLIC_KEY,
+    ),
+    await requestFaucet(
+      suiClient, 
+      faucetClient,
+      m2FaucetUrl,
+      PUBLIC_KEY,
+    )
+  ]);
 
-  const res = await axios.post(m2Url, requestData, {
-    headers : {
-      "Content-Type" : "application/json"
-    },
-    timeout: 50000,
-  });
-
-  if(res.status !== 200) throw new Error(
-    res.data.error.message
+  return await coinClient.transfer(
+    GLOBAL_SIGNER,
+    address,
+    1000000000
   );
-  
-  return res.data;
 
 }
